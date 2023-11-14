@@ -47,3 +47,8 @@ po/*~
 
 # RStudio Connect folder
 rsconnect/
+
+# Python
+api_key.txt
+case_id.txt
+.ipynb_checkpoints/
