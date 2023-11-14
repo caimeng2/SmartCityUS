@@ -1,0 +1,73 @@
+---
+title: "smart cities mapping"
+author: "cm"
+date: "2023-11-14"
+output: html_document
+---
+
+```{r}
+options(scipen=16)
+library(tidyverse)
+```
+```{r}
+df <- read_csv("data/smart_cities20231114.csv")
+```
+
+# how prevalent smart cities, towns, and villages are in the US?
+
+```{r}
+# total number of smart cities
+sum(df$smart)
+```
+
+```{r}
+# summarize by state
+df %>% group_by(State) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=smart_count/muni_count*100) %>% arrange(smart_count)
+```
+
+```{r}
+# summarize by population
+df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1))
+df %>% group_by(pop_size) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=smart_count/muni_count*100)
+``` 
+
+```{r}
+df %>% filter(pop_size==1) %>% filter(smart==1)
+```
+
+```{r}
+map_df <- df %>% filter(State!="AK") %>% filter(State!="HI") %>% arrange(smart) # to make smart cities pop up in map
+```
+
+```{r}
+#mycolor <- c("#596174","#d32d41" )
+#mycolor <- c("#1c4e80","#d32d41" )
+mycolor <- c("#596174","#ea6a47" )
+states <- map_data("state")
+```
+
+```{r}
+ggplot() + 
+  geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.4 ,color ="white",fill = 'gray95') + 
+  geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke =0,  color=as.factor(smart)), size=0.8, alpha = 0.7) + 
+  theme_void() +
+  xlab('') + ylab('') +
+  scale_color_manual(name="", labels=c("1"="smart city", "0"="non-smart city"), values = mycolor)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = c(0.2, 0.15))+
+  guides(color=guide_legend(reverse=T, override.aes = list(size = 5)))
+```
+
+```{r}
+ggplot() + 
+  geom_polygon(data = states, aes(x=long, y = lat, group = group), size=0.2,color ="white",fill = 'gray90') + 
+  geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke=0.05, color=as.factor(smart),size=as.factor(pop_size)), alpha = 0.45) + 
+  theme_void() +
+  xlab('') + ylab('') +
+  scale_size_ordinal(name=" Population", range=c(0.5,6), 
+                      labels=c("4"="1 million or more" ,"3"= "100,000 to 999,999", "2"="10,000 to 99,999", "1"="Less than 10,000"), )+
+  scale_color_manual(name=" ", labels=c("1"="Smart city", "0"="Non-smart city"), values = mycolor)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = c(0.98 , 0.24))+
+  theme(plot.margin = unit(c(1,2,1,1), "cm"))+
+  guides(size = guide_legend(reverse=T, override.aes = list(shape=1)), color=guide_legend(reverse=T, override.aes = list(size = 5)))
+#ggsave("map.png")
+```
