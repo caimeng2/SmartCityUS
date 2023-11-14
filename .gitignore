@@ -52,3 +52,7 @@ rsconnect/
 api_key.txt
 case_id.txt
 .ipynb_checkpoints/
+
+# nhgis data
+data/nhgis
+
