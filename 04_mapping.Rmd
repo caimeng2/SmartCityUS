@@ -28,7 +28,7 @@ df %>% group_by(State) %>% summarise(muni_count=n(), smart_count=sum(smart), sma
 ```{r}
 # summarize by population
 df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1))
-df %>% group_by(pop_size) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=smart_count/muni_count*100)
+df %>% group_by(pop_size) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=round(smart_count/muni_count*100,1))
 ``` 
 
 ```{r}
@@ -65,5 +65,5 @@ ggplot() +
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = c(0.98 , 0.24))+
   theme(plot.margin = unit(c(1,2,1,1), "cm"))+
   guides(size = guide_legend(reverse=T, override.aes = list(shape=1)), color=guide_legend(reverse=T, override.aes = list(size = 5)))
-#ggsave("map.png")
+#ggsave("figure/map.png")
 ```
