@@ -1,7 +1,7 @@
 ---
-title: "smart cities mapping"
+title: "mapping smart cities"
 author: "cm"
-date: "2023-11-14"
+date: "2024-01-10"
 output: html_document
 ---
 
@@ -10,7 +10,7 @@ options(scipen=16)
 library(tidyverse)
 ```
 ```{r}
-df <- read_csv("data/smart_cities20231114.csv")
+df <- read_csv("data/smart_cities20240110.csv")
 ```
 
 # how prevalent smart cities, towns, and villages are in the US?
@@ -30,10 +30,6 @@ df %>% group_by(State) %>% summarise(muni_count=n(), smart_count=sum(smart), sma
 df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1))
 df %>% group_by(pop_size) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=smart_count/muni_count*100)
 ``` 
-
-```{r}
-df %>% filter(pop_size==1) %>% filter(smart==1)
-```
 
 ```{r}
 map_df <- df %>% filter(State!="AK") %>% filter(State!="HI") %>% arrange(smart) # to make smart cities pop up in map
@@ -59,7 +55,7 @@ ggplot() +
 
 ```{r}
 ggplot() + 
-  geom_polygon(data = states, aes(x=long, y = lat, group = group), size=0.2,color ="white",fill = 'gray90') + 
+  geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.2,color ="white",fill = 'gray90') + 
   geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke=0.05, color=as.factor(smart),size=as.factor(pop_size)), alpha = 0.45) + 
   theme_void() +
   xlab('') + ylab('') +
