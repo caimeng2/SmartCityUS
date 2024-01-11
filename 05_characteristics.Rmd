@@ -1,0 +1,310 @@
+---
+title: "smart city characteristics"
+author: "cm"
+date: "2024-01-11"
+output: html_document
+---
+
+
+```{r}
+options(scipen=16)
+#library(rstatix)
+library(tidyverse)
+```
+
+```{r}
+df <- read_csv("data/smart_cities20240110.csv")
+ds254 <- read_csv("data/nhgis/nhgis0017_csv/nhgis0017_ds254_20215_place.csv")
+ds255 <- read_csv("data/nhgis/nhgis0017_csv/nhgis0017_ds255_20215_place.csv")
+ds248 <- read_csv("data/nhgis/nhgis0018_csv/nhgis0018_ds248_2020_place.csv")
+ds254_2 <- read_csv("data/nhgis/nhgis0018_csv/nhgis0018_ds254_20215_place.csv")
+ds254_3 <- read_csv("data/nhgis/nhgis0019_csv/nhgis0019_ds254_20215_place.csv")
+```
+
+```{r}
+df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1)) %>% mutate(pop_label=case_when(POP20>=1000000 ~ "Population: 1 million or more", POP20<1000000&POP20>=100000 ~ "Population: 100,000 to 999,999", POP20<100000&POP20>= 10000 ~"Population: 10,000 to 99,999", POP20<10000 ~"Population: less than 10,000")) 
+df$pop_label <- factor(df$pop_label, levels = c("Population: 1 million or more", "Population: 100,000 to 999,999", "Population: 10,000 to 99,999", "Population: less than 10,000"))
+```
+
+```{r}
+mycolor <- c("#596174","#ea6a47" )
+```
+
+# cleaning the data
+
+```{r}
+ds254 <- ds254 %>% 
+# Percentage of commuters 16 and over carpooling, using public transport, bicycles, or walking to work
+# Data: Table 1:     Means of Transportation to Work
+  mutate(green_commute = (AOOTE004+AOOTE010+AOOTE018+AOOTE019)/(AOOTE001-AOOTE021)*100, 
+# Percentage of the population 25 and over with a bachelor’s degree or higher
+# Data: Table 2:     Educational Attainment for the Population 25 Years and Over
+        bachelor = (AOP8E022+AOP8E023+AOP8E024+AOP8E025)/AOP8E001*100, 
+# Percentage of households living below poverty line
+# Data: Table 3:     Poverty Status in the Past 12 Months by Household Type by Age of Householder
+        poverty = AOQEE002/AOQEE001*100,
+# Per capita income
+# Data: Table 4:     Per Capita Income in the Past 12 Months (in 2021 Inflation-Adjusted Dollars)
+        income = AORME001,
+# Median value of housing units
+# Data: Table 7:     Median Value (Dollars)
+        housing_value = AOULE001,
+# Percentage of the population without health insurance
+# Data: Table 9:     Types of Health Insurance Coverage by Age
+        no_insurance = (AOU0E017+AOU0E033+AOU0E050+AOU0E066)/AOU0E001*100, 
+# Percentage of households with internet subscription
+# Data: Table 10:    Presence and Types of Internet Subscriptions in Household
+        internet = AOU2E002/AOU2E001*100,
+# Percentage of households with computers
+# Data: Table 11:    Computers in Household
+        computer = (AOVIE001-AOVIE007)/AOVIE001*100) %>% 
+  select(GISJOIN, green_commute, bachelor, poverty, income, housing_value, no_insurance, internet, computer)
+```
+
+```{r}
+ds255 <- ds255 %>% 
+# Gini index of income inequality (It measures the degree of income inequality on a 0-1 scale. The more equal the income distribution, the lower the Gini index
+# Data: Table 1:     Gini Index of Income Inequality
+  mutate(gini = AO72E001) %>% select(GISJOIN, gini)
+```
+
+```{r}
+ds248 <- ds248 %>% 
+# Percentage of vacant housing units
+# Data: Table 1:     Occupancy Status
+  mutate(vacant_rate = U7G003/U7G001*100) %>% select(GISJOIN,vacant_rate)
+```
+
+```{r}
+ds254_2 <- ds254_2 %>% 
+# Median age
+# Data: Table 1:     Median Age by Sex
+  mutate(age = AONUE001) %>% select(GISJOIN, age)
+```
+
+```{r}
+ds254_3 <- ds254_3 %>% 
+# Racial and ethnic diversity index: 1-(H2+NHW2+NHB2+NHA2+NHNH2+NHO2+NHTOM2)
+# https://www.census.gov/newsroom/blogs/random-samplings/2021/08/measuring-racial-ethnic-diversity-2020-census.html
+# - Hispanic
+# - White alone, non-Hispanic
+# - Black or African American alone, non-Hispanic
+# - American Indian and Alaska Native alone, non-Hispanic
+# - Asian alone, non-Hispanic
+# - Native Hawaiian and Other Pacific Islander alone, non-Hispanic
+# - Some Other Race alone, non-Hispanic
+# - Multiracial, non-Hispanic
+# "This index shows the probability that two people chosen at random will be from different race and ethnic groups."
+# "The DI is bounded between 0 and 1, with a zero-value indicating that everyone in the population has the same racial and ethnic characteristics, while a value close to 1 indicates that everyone in the population has different characteristics."
+# Data: Table 2:     Hispanic or Latino Origin by Race
+  mutate(diversity = 1-((AOOCE012/AOOCE001)^2+(AOOCE003/AOOCE001)^2+(AOOCE004/AOOCE001)^2+(AOOCE005/AOOCE001)^2+(AOOCE006/AOOCE001)^2+(AOOCE007/AOOCE001)^2+(AOOCE008/AOOCE001)^2+(AOOCE009/AOOCE001)^2),
+# Unemployed rate: (Unemployed/Labor Force) x 100
+# Data: Table 4:     Employment Status for the Population 16 Years and Over
+        unemp = AOSJE005/AOSJE002*100,
+# Percentage male
+# Data: Table 1:     Sex by Age
+        male = AONTE002/AONTE001*100) %>% 
+  select(GISJOIN, diversity, unemp, male)
+```
+
+```{r}
+df <- merge(df, ds254, by = "GISJOIN", all.x = TRUE)
+df <- merge(df, ds255, by = "GISJOIN", all.x = TRUE)
+df <- merge(df, ds248, by = "GISJOIN", all.x = TRUE)
+df <- merge(df, ds254_2, by = "GISJOIN", all.x = TRUE)
+df <- merge(df, ds254_3, by = "GISJOIN", all.x = TRUE)
+```
+
+# plot functions
+
+```{r}
+plot_mean <- function(data, x, y, lab_text) {
+  data_mean <- data %>% 
+    group_by({{x}}) %>% 
+    summarise(n=n(), mean = round(mean({{y}}, na.rm=T),2), .groups = "drop")
+  print(data_mean)
+  
+  data_plot <- data %>% drop_na({{y}})
+
+  ggplot() +
+    geom_density(data_plot, mapping=aes({{y}}, fill=as.factor({{x}})), alpha=0.4, color = NA) +
+    geom_vline(data_mean, mapping=aes(xintercept=mean, color = as.factor({{x}})),linetype="dashed") +
+    #geom_text(data_mean, mapping=aes(mean,+Inf, label=round(mean,1), color=as.factor(smart)),angle=90, vjust=1, hjust=2, size=3) +
+    scale_fill_manual(name=" ", labels=c("1"="Smart cities", "0"="Non-smart cities"), values = mycolor) +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic() +
+    xlab(lab_text) +
+    ylab("Density") 
+}
+# The height of the curve is density, not probability. Probability is represented by area: multiplying density by an infinitesimal width along the x-axis to get the probability of variable x.
+```
+
+```{r}
+plot_facet <- function(data, x, y, lab_text) {
+  data_mean <- data %>% 
+    group_by( pop_label, {{x}}) %>% 
+    summarise(n=n(), mean = round(mean({{y}}, na.rm=T),2), .groups = "drop")
+  print(data_mean)
+  
+  data_plot <- data %>% drop_na({{y}})
+
+  ggplot() +
+    geom_density(data_plot, mapping=aes({{y}}, fill=as.factor({{x}})), alpha=0.4, color = NA) +
+    geom_vline(data_mean, mapping=aes(xintercept = mean, color = as.factor({{x}})),linetype="dashed") +
+    scale_fill_manual(name=" ", labels=c("1"="Smart cities", "0"="Non-smart cities"), values = mycolor) +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_bw()+
+    xlab(lab_text) +
+    ylab("Density") +
+    facet_wrap(~ pop_label)
+}
+```
+
+# what characteristics do smart city have
+
+## Percentage male
+```{r}
+plot_mean(df, smart, male, "Percentage male")
+```
+
+```{r}
+plot_facet(df, smart, male, "Percentage male")
+```
+## Median age
+
+```{r}
+plot_mean(df, smart, age, "Median age")
+```
+
+```{r}
+plot_facet(df, smart, age, "Median age")
+```
+## !Racial and ethnic diversity index
+
+Smart cities are more racially and ethnically diverse. This is especially true for municipalities with small sizes.
+
+```{r}
+plot_mean(df, smart, diversity, "Racial and ethnic diversity index")
+```
+
+```{r}
+plot_facet(df, smart, diversity, "Racial and ethnic diversity index")
+```
+
+## !Percentage of the population 25 and over with a bachelor's degree or higher
+
+
+```{r}
+plot_mean(df, smart, bachelor, "Percentage of population with a bachelor’s degree or higher")
+```
+
+```{r}
+plot_facet(df, smart, bachelor, "Percentage of population 25 and over with a bachelor’s degree or higher")
+#ggsave("figure/edu.png")
+```
+
+## !Per capita income
+
+```{r}
+plot_mean(df, smart, income, "Per capita income (dollar)")
+```
+```{r}
+41029.94-31005.14
+```
+
+```{r}
+plot_facet(df, smart, income, "Per capita income (dollar)")
+```
+```{r}
+37556.12-34520.57
+42698.93-36487.84
+46138.68-30089.62
+```
+
+## !Gini index of income inequality
+
+```{r}
+plot_mean(df, smart, gini, "Gini index of income inequality")
+```
+
+```{r}
+plot_facet(df, smart, gini, "Gini index of income inequality")
+```
+
+## !Median value of housing units
+
+```{r}
+plot_mean(df, smart, housing_value, "Median value of housing units")
+```
+
+```{r}
+plot_facet(df, smart, housing_value, "Median value of housing units")
+```
+
+## Percentage of vacant housing units
+
+```{r}
+plot_mean(df, smart, vacant_rate, "Percentage of vacant housing units")
+```
+
+```{r}
+plot_facet(df, smart, vacant_rate, "Percentage of vacant housing units")
+```
+
+## Percentage of commuters 16 and over carpooling, using public transport, bicycles, or walking to work
+```{r}
+plot_mean(df, smart, green_commute, "Percentage of commuters carpooling, using public transport, bicycles, or walking to work")
+```
+
+```{r}
+plot_facet(df, smart, green_commute, "Percentage of commuters carpooling, using public transport, bicycles, or walking to work")
+```
+## Unemployed rate
+
+```{r}
+plot_mean(df, smart, unemp, "Unemployed rate")
+```
+
+```{r}
+plot_facet(df, smart, unemp, "Unemployed rate")
+```
+
+## Percentage of the population without health insurance
+
+```{r}
+plot_mean(df, smart, no_insurance, "Percentage of the population without health insurance")
+```
+
+```{r}
+plot_facet(df, smart, no_insurance, "Percentage of the population without health insurance")
+```
+
+## Percentage of households living below poverty line
+
+```{r}
+plot_mean(df, smart, poverty, "Percentage of households living below poverty line")
+```
+
+```{r}
+plot_facet(df, smart, poverty, "Percentage of households living below poverty line")
+```
+
+## !Percentage of households with internet subscription
+
+```{r}
+plot_mean(df, smart, internet, "Percentage of households with internet subscription")
+```
+
+```{r}
+plot_facet(df, smart, internet, "Percentage of households with internet subscription")
+```
+
+## !Percentage of households with computers
+
+```{r}
+plot_mean(df, smart, computer, "Percentage of households with computers")
+```
+
+```{r}
+plot_facet(df, smart, computer, "Percentage of households with computers")
+```
