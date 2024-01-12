@@ -181,8 +181,6 @@ plot_facet(df, smart, age, "Median age")
 ```
 ## !Racial and ethnic diversity index
 
-Smart cities are more racially and ethnically diverse. This is especially true for municipalities with small sizes.
-
 ```{r}
 plot_mean(df, smart, diversity, "Racial and ethnic diversity index")
 ```
@@ -200,7 +198,7 @@ plot_mean(df, smart, bachelor, "Percentage of population with a bachelor’s deg
 
 ```{r}
 plot_facet(df, smart, bachelor, "Percentage of population 25 and over with a bachelor’s degree or higher")
-ggsave("figure/edu.png")
+#ggsave("figure/edu.png")
 ```
 
 ## !Per capita income
