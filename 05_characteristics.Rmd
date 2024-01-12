@@ -160,7 +160,7 @@ plot_facet <- function(data, x, y, lab_text) {
 }
 ```
 
-# what characteristics do smart city have
+# what characteristics do smart cities have
 
 ## Percentage male
 ```{r}
@@ -170,7 +170,7 @@ plot_mean(df, smart, male, "Percentage male")
 ```{r}
 plot_facet(df, smart, male, "Percentage male")
 ```
-## Median age
+## !Median age
 
 ```{r}
 plot_mean(df, smart, age, "Median age")
@@ -200,7 +200,7 @@ plot_mean(df, smart, bachelor, "Percentage of population with a bachelor’s deg
 
 ```{r}
 plot_facet(df, smart, bachelor, "Percentage of population 25 and over with a bachelor’s degree or higher")
-#ggsave("figure/edu.png")
+ggsave("figure/edu.png")
 ```
 
 ## !Per capita income
