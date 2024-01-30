@@ -1,0 +1,85 @@
+---
+title: "sdg analysis"
+author: "cm"
+date: "2024-01-30"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+data <- read.csv("data/sdgs20240130.csv")
+city <- read.csv("data/smart_cities20240110.csv")
+```
+```{r}
+smart <- city %>% filter(smart==1) %>% select(GISJOIN)
+```
+
+```{r}
+data <- data %>% group_by(GISJOIN) %>% summarise(SDG1=sum(SDG1),SDG2=sum(SDG2),SDG3=sum(SDG3),SDG4=sum(SDG4),SDG5=sum(SDG5),SDG6=sum(SDG6),SDG7=sum(SDG7),SDG8=sum(SDG8),SDG9=sum(SDG9),SDG10=sum(SDG10),SDG11=sum(SDG11),SDG12=sum(SDG12),SDG13=sum(SDG13),SDG14=sum(SDG14),SDG15=sum(SDG15),SDG16=sum(SDG16),SDG17=sum(SDG17),soc=sum(soc),env=sum(env),eco=sum(eco))
+```
+
+```{r}
+df <- left_join(smart, data, by="GISJOIN")
+df[is.na(df)] <- 0
+```
+```{r}
+df[-1] <- ifelse(df[-1]>0, 1, 0) # change time of mentions to boolean
+df <- df %>% bind_rows(summarise(.,
+                      across(where(is.numeric), sum),
+                      across(where(is.character), ~"Total")))
+```
+```{r}
+df
+```
+```{r}
+bardf <- df %>% tail(1)
+bardf <- data.frame(t(bardf[-1]))
+colnames(bardf) <- "Value"
+bardf$pct <- round(bardf$Value/397*100, 1)
+bardf <- cbind(SDG = rownames(bardf), bardf)
+rownames(bardf) <- 1:nrow(bardf)
+bardf
+```
+```{r}
+bardf <-bardf [1:17,]
+```
+
+```{r}
+sdg_name <- paste0("SDG", seq(1, 17, 1))
+
+bardf$SDG <- factor(bardf$SDG, levels = c("SDG1", "SDG2",  "SDG3",  "SDG4",  "SDG5",  "SDG6" , "SDG7" , "SDG8" , "SDG9",  "SDG10", "SDG11" ,"SDG12","SDG13", "SDG14", "SDG15", "SDG16","SDG17"))
+
+bardf$label <- c("No Poverty", "Zero Hunger", "Good Health and Well-being", "Quality Education", "Gender Equality", "Clean Water and Sanitation", "Affordable and Clean Energy", "Decent Work and Economic Growth", "Industry, Innovation, and Infrastructure", "Reducing Inequality", "Sustainable Cities and Communities", "Responsible Consumption and Production", "Climate Action", "Life Below Water", "Life On Land", "Peace, Justice, and Strong Institutions", "Partnerships for the Goals")
+
+color_rgb <- data.frame(
+    R = c(229, 221, 76, 197, 255, 38, 252, 162, 253, 221, 253, 191, 63, 10, 86, 0, 25),
+    G = c(36, 166, 159, 25, 58, 189, 195, 25, 105, 19, 157, 139, 126, 141, 192, 104, 72),
+    B = c(59, 58, 56, 45, 33, 226, 11, 66, 37, 103, 36, 46, 68, 217, 43, 157, 106)
+  )
+
+  ### HEX
+
+color_hex <- rgb(color_rgb, maxColorValue = 255)
+names(color_hex) <- sdg_name
+  sdg_color <- function(x) {
+    color <- color_hex[x]
+    return(color)}
+```
+```{r}
+ggplot(bardf, aes(x = SDG, y = pct, fill = SDG)) +
+    geom_col(show.legend = F) +
+    scale_fill_manual(values = sdg_color(x = 1:17)) +
+    scale_x_discrete(labels=c("1 No Poverty", "2 Zero Hunger", "3 Good Health & Well-being", "4 Quality Education", "5 Gender Equality", "6 Clean Water & Sanitation", "7 Affordable & Clean Energy", "8 Decent Work & Economic Growth", "9 Industry, Innovation & Infrastructure", "10 Reducing Inequality", "11 Sustainable Cities & Communities", "12 Responsible Consumption & Production", "13 Climate Action", "14 Life Below Water", "15 Life On Land", "16 Peace, Justice & Strong Institutions", "17 Partnerships for the Goals")) +
+    theme_bw() +
+    theme(
+      panel.grid.minor = ggplot2::element_blank(),
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      axis.title.x = ggplot2::element_blank(),
+      panel.grid.major.x = element_blank() 
+    )+
+  labs(y="Smart cities (%)")
+#ggsave("sdgmentions.png")
+```
