@@ -56,3 +56,5 @@ case_id.txt
 # nhgis data
 data/nhgis
 
+# text data
+data/seesus_text
