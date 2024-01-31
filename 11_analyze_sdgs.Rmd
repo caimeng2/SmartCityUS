@@ -44,15 +44,15 @@ rownames(bardf) <- 1:nrow(bardf)
 bardf
 ```
 ```{r}
-bardf <-bardf [1:17,]
+bardf <-bardf [1:17,] # keep sdgs only
 ```
 
 ```{r}
 sdg_name <- paste0("SDG", seq(1, 17, 1))
 
-bardf$SDG <- factor(bardf$SDG, levels = c("SDG1", "SDG2",  "SDG3",  "SDG4",  "SDG5",  "SDG6" , "SDG7" , "SDG8" , "SDG9",  "SDG10", "SDG11" ,"SDG12","SDG13", "SDG14", "SDG15", "SDG16","SDG17"))
+bardf$SDG <- factor(bardf$SDG, levels = c("SDG1", "SDG2",  "SDG3",  "SDG4",  "SDG5",  "SDG6" , "SDG7" , "SDG8" , "SDG9",  "SDG10", "SDG11" ,"SDG12", "SDG13", "SDG14", "SDG15", "SDG16","SDG17"))
 
-bardf$label <- c("No Poverty", "Zero Hunger", "Good Health and Well-being", "Quality Education", "Gender Equality", "Clean Water and Sanitation", "Affordable and Clean Energy", "Decent Work and Economic Growth", "Industry, Innovation, and Infrastructure", "Reducing Inequality", "Sustainable Cities and Communities", "Responsible Consumption and Production", "Climate Action", "Life Below Water", "Life On Land", "Peace, Justice, and Strong Institutions", "Partnerships for the Goals")
+bardf$label <- c("1 No Poverty", "2 Zero Hunger", "3 Good Health and Well-being", "4 Quality Education", "5 Gender Equality", "6 Clean Water and Sanitation", "7 Affordable and Clean Energy", "8 Decent Work and Economic Growth", "9 Industry, Innovation, and Infrastructure", "10 Reducing Inequality", "11 Sustainable Cities and Communities", "12 Responsible Consumption and Production", "13 Climate Action", "14 Life Below Water", "15 Life On Land", "16 Peace, Justice, and Strong Institutions", "17 Partnerships for the Goals")
 
 color_rgb <- data.frame(
     R = c(229, 221, 76, 197, 255, 38, 252, 162, 253, 221, 253, 191, 63, 10, 86, 0, 25),
@@ -69,17 +69,18 @@ names(color_hex) <- sdg_name
     return(color)}
 ```
 ```{r}
-ggplot(bardf, aes(x = SDG, y = pct, fill = SDG)) +
+ggplot(bardf, aes(x = reorder(label, -pct), y = pct, fill = SDG)) +
     geom_col(show.legend = F) +
     scale_fill_manual(values = sdg_color(x = 1:17)) +
-    scale_x_discrete(labels=c("1 No Poverty", "2 Zero Hunger", "3 Good Health & Well-being", "4 Quality Education", "5 Gender Equality", "6 Clean Water & Sanitation", "7 Affordable & Clean Energy", "8 Decent Work & Economic Growth", "9 Industry, Innovation & Infrastructure", "10 Reducing Inequality", "11 Sustainable Cities & Communities", "12 Responsible Consumption & Production", "13 Climate Action", "14 Life Below Water", "15 Life On Land", "16 Peace, Justice & Strong Institutions", "17 Partnerships for the Goals")) +
+    #scale_y_continuous(limits= c(0,100))+
     theme_bw() +
     theme(
       panel.grid.minor = ggplot2::element_blank(),
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
       axis.title.x = ggplot2::element_blank(),
-      panel.grid.major.x = element_blank() 
+      panel.grid.major.x = element_blank(),
+      plot.margin = unit(c(0.5, 0.2, 0.2, 1), "inches")
     )+
-  labs(y="Smart cities (%)")
-#ggsave("sdgmentions.png")
+  labs(y="Smart cities addressing SDGs (%)")
+#ggsave("figure/sdgs.png", height = 5, width = 6)
 ```
