@@ -82,5 +82,16 @@ ggplot(bardf, aes(x = reorder(label, -pct), y = pct, fill = SDG)) +
       plot.margin = unit(c(0.5, 0.2, 0.2, 1), "inches")
     )+
   labs(y="Smart cities addressing SDGs (%)")
-#ggsave("figure/sdgs.png", height = 5, width = 6)
+ggsave("figure/sdgs.png", height = 6, width = 8)
 ```
+
+```{r}
+df <- left_join(df[1:397,], city[c("GISJOIN","POP20")], by="GISJOIN")
+```
+```{r}
+df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1))
+```
+```{r}
+df %>% group_by(pop_size) %>% summarise(n=n(), soc_pct=sum(soc)/n, env_pct=sum(env)/n, eco_pct=sum(eco)/n)
+```
+
