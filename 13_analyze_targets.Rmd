@@ -1,0 +1,38 @@
+---
+title: "target analysis"
+author: "cm"
+date: "2024-02-02"
+output: html_document
+---
+```{r}
+library(tidyverse)
+```
+```{r}
+data <- read.csv("data/targets20240202.csv")
+```
+
+```{r}
+data
+```
+```{r}
+data <-data %>% mutate(target = gsub("\\[|\\]", "", target)) %>% mutate(target = gsub("\'", "", target)) #remove []and''
+```
+```{r}
+df <- data %>% group_by(GISJOIN) %>% summarise(targets=paste(target, collapse=", "))
+df
+```
+
+```{r}
+# unique targets by city
+df <- df %>% mutate(target= targets %>% str_split(", ") %>% map(unique) %>% map_chr(paste, collapse=", "))
+```
+```{r}
+df
+```
+```{r}
+target_str <- paste(df$target, collapse="")
+```
+
+```{r}
+as.data.frame(table(unlist(strsplit(target_str, ",")))) %>% setNames(c("target", "count")) %>% mutate(pct=count/397*100) %>% arrange(count) %>% tail(10)
+```
