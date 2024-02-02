@@ -10,7 +10,7 @@ library(tidyverse)
 ```
 
 ```{r}
-data <- read.csv("data/sdgs20240130.csv")
+data <- read.csv("data/sdgs20240202.csv")
 city <- read.csv("data/smart_cities20240110.csv")
 ```
 ```{r}
@@ -82,7 +82,7 @@ ggplot(bardf, aes(x = reorder(label, -pct), y = pct, fill = SDG)) +
       plot.margin = unit(c(0.5, 0.2, 0.2, 1), "inches")
     )+
   labs(y="Smart cities addressing SDGs (%)")
-ggsave("figure/sdgs.png", height = 6, width = 8)
+#ggsave("figure/sdgs.png", height = 6, width = 8)
 ```
 
 ```{r}
