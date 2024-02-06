@@ -52,7 +52,7 @@ ggplot() +
   geom_point(data = map_df %>% filter(smart==1),  aes(x = INTPTLON, y = INTPTLAT, stroke =0,  color=as.factor(smart)), size=2) + 
   theme_void() +
   xlab('') + ylab('') +
-  scale_color_manual(name="", values = "dark grey")+
+  scale_color_manual(name="", values = "salmon")+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = c(0.2, 0.15))+
   guides(color="none", fill="none")
 ```
