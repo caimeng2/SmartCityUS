@@ -245,6 +245,7 @@ plot_facet2(df, smart, income, "Per capita income (US dollar)")
 ```
 The plot does not display per capita income exceeding 100,000 US dollars.
 
+
 ## !Gini index of income inequality
 
 ```{r}
