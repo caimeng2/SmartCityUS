@@ -170,7 +170,7 @@ plot_mean(df, smart, male, "Percentage male")
 ```{r}
 plot_facet(df, smart, male, "Percentage male")
 ```
-## !Median age
+## Median age
 
 ```{r}
 plot_mean(df, smart, age, "Median age")
@@ -211,13 +211,39 @@ plot_mean(df, smart, income, "Per capita income (dollar)")
 ```
 
 ```{r}
-plot_facet(df, smart, income, "Per capita income (dollar)")
+plot_facet(df, smart, income, "Per capita income (US dollar)")
 ```
 ```{r}
 37556.12-34520.57
 42698.93-36487.84
 46138.68-30089.62
 ```
+
+```{r}
+plot_facet2 <- function(data, x, y, lab_text) {
+  data_mean <- data %>% 
+    group_by( pop_label, {{x}}) %>% 
+    summarise(n=n(), mean = round(mean({{y}}, na.rm=T),2), .groups = "drop")
+  print(data_mean)
+  
+  data_plot <- data %>% drop_na({{y}})
+
+  ggplot() +
+    geom_density(data_plot, mapping=aes({{y}}, fill=as.factor({{x}})), alpha=0.4, color = NA) +
+    geom_vline(data_mean, mapping=aes(xintercept = mean, color = as.factor({{x}})),linetype="dashed") +
+    scale_fill_manual(name=" ", labels=c("1"="Smart cities", "0"="Non-smart cities"), values = mycolor) +
+    scale_color_manual(values = mycolor, guide="none") +
+    scale_x_continuous(limits = c(0, 100000)) +
+    theme_bw()+
+    xlab(lab_text) +
+    ylab("Density") +
+    facet_wrap(~ pop_label)
+}
+```
+```{r}
+plot_facet2(df, smart, income, "Per capita income (US dollar)")
+```
+The plot does not display per capita income exceeding 100,000 US dollars.
 
 ## !Gini index of income inequality
 
