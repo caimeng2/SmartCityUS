@@ -6,6 +6,7 @@ output: html_document
 ---
 ```{r}
 library(tidyverse)
+library(stringr)
 ```
 ```{r}
 data <- read.csv("data/targets20240202.csv")
@@ -15,8 +16,9 @@ data <- read.csv("data/targets20240202.csv")
 data
 ```
 ```{r}
-data <-data %>% mutate(target = gsub("\\[|\\]", "", target)) %>% mutate(target = gsub("\'", "", target)) #remove []and''
+data <- data %>% mutate(target = gsub("\\[|\\]", "", target)) %>% mutate(target = gsub("\'", "", target)) #remove []and''
 ```
+
 ```{r}
 df <- data %>% group_by(GISJOIN) %>% summarise(targets=paste(target, collapse=", "))
 df
@@ -25,14 +27,16 @@ df
 ```{r}
 # unique targets by city
 df <- df %>% mutate(target= targets %>% str_split(", ") %>% map(unique) %>% map_chr(paste, collapse=", "))
+df$target <- interaction(df$target, ", ", sep = "")
 ```
 ```{r}
 df
 ```
 ```{r}
-target_str <- paste(df$target, collapse="")
+target_str <- paste(df$target, collapse=",")
+target_str <- str_replace_all(target_str, fixed(" "), "") #remove white space
 ```
 
 ```{r}
-as.data.frame(table(unlist(strsplit(target_str, ",")))) %>% setNames(c("target", "count")) %>% mutate(pct=count/397*100) %>% arrange(count) %>% tail(10)
+as.data.frame(table(unlist(strsplit(target_str, ",")))) %>% setNames(c("target", "count")) %>% mutate(pct=count/397*100) %>% arrange(count) 
 ```
