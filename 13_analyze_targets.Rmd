@@ -40,3 +40,5 @@ target_str <- str_replace_all(target_str, fixed(" "), "") #remove white space
 ```{r}
 as.data.frame(table(unlist(strsplit(target_str, ",")))) %>% setNames(c("target", "count")) %>% mutate(pct=count/397*100) %>% arrange(count) 
 ```
+
+
