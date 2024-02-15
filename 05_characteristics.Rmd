@@ -160,8 +160,6 @@ plot_facet <- function(data, x, y, lab_text) {
 }
 ```
 
-# what characteristics do smart cities have
-
 ## Percentage male
 ```{r}
 plot_mean(df, smart, male, "Percentage male")
@@ -193,7 +191,7 @@ plot_facet(df, smart, diversity, "Racial and ethnic diversity index")
 
 
 ```{r}
-plot_mean(df, smart, bachelor, "Percentage of population with a bachelor’s degree or higher")
+plot_mean(df, smart, bachelor, "Percentage of population 25 and over with a bachelor’s degree or higher")
 ```
 
 ```{r}
@@ -243,7 +241,7 @@ plot_facet2 <- function(data, x, y, lab_text) {
 ```{r}
 plot_facet2(df, smart, income, "Per capita income (US dollar)")
 ```
-The plot does not display per capita income exceeding 100,000 US dollars.
+Note: The plot does not display per capita income exceeding 100,000 US dollars.
 
 
 ## !Gini index of income inequality
@@ -254,6 +252,7 @@ plot_mean(df, smart, gini, "Gini index of income inequality")
 
 ```{r}
 plot_facet(df, smart, gini, "Gini index of income inequality")
+#ggsave("figure/gini.png")
 ```
 
 ## !Median value of housing units
@@ -283,25 +282,28 @@ plot_mean(df, smart, green_commute, "Percentage of commuters carpooling, using p
 
 ```{r}
 plot_facet(df, smart, green_commute, "Percentage of commuters carpooling, using public transport, bicycles, or walking to work")
+#ggsave("figure/transportation.png")
 ```
 ## Unemployed rate
 
 ```{r}
-plot_mean(df, smart, unemp, "Unemployed rate")
+plot_mean(df, smart, unemp, "Percentage of population umemployed")
 ```
 
 ```{r}
-plot_facet(df, smart, unemp, "Unemployed rate")
+plot_facet(df, smart, unemp, "Percentage of population umemployed")
+#ggsave("figure/employment.png")
 ```
 
-## Percentage of the population without health insurance
+## Percentage of population without health insurance
 
 ```{r}
-plot_mean(df, smart, no_insurance, "Percentage of the population without health insurance")
+plot_mean(df, smart, no_insurance, "Percentage of population without health insurance")
 ```
 
 ```{r}
-plot_facet(df, smart, no_insurance, "Percentage of the population without health insurance")
+plot_facet(df, smart, no_insurance, "Percentage of population without health insurance")
+#ggsave("figure/insurance.png")
 ```
 
 ## Percentage of households living below poverty line
@@ -312,6 +314,7 @@ plot_mean(df, smart, poverty, "Percentage of households living below poverty lin
 
 ```{r}
 plot_facet(df, smart, poverty, "Percentage of households living below poverty line")
+#ggsave("figure/poverty.png")
 ```
 
 ## !Percentage of households with internet subscription
@@ -322,6 +325,7 @@ plot_mean(df, smart, internet, "Percentage of households with internet subscript
 
 ```{r}
 plot_facet(df, smart, internet, "Percentage of households with internet subscription")
+#ggsave("figure/internet.png")
 ```
 
 ## !Percentage of households with computers
@@ -333,3 +337,4 @@ plot_mean(df, smart, computer, "Percentage of households with computers")
 ```{r}
 plot_facet(df, smart, computer, "Percentage of households with computers")
 ```
+
