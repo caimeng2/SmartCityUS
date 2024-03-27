@@ -21,6 +21,11 @@ sum(df$smart)
 ```
 
 ```{r}
+# total number of people in smart cities
+df %>% filter(smart == 1) %>% summarise(total_pop=sum(POP20))
+```
+
+```{r}
 # summarize by state
 df %>% group_by(State) %>% summarise(muni_count=n(), smart_count=sum(smart), smart_den=smart_count/muni_count*100) %>% arrange(smart_count)
 ```
@@ -60,6 +65,7 @@ ggplot() +
 ggplot() + 
   geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.4 ,color ="white",fill = 'gray95') + 
   geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke =0,  color=as.factor(smart)), size=0.8, alpha = 0.7) + 
+  geom_path(data = states, aes(x = long, y = lat, group = group), color = "white", size = 0.2) +
   theme_void() +
   xlab('') + ylab('') +
   scale_color_manual(name="", labels=c("1"="smart city", "0"="non-smart city"), values = mycolor)+
@@ -69,8 +75,9 @@ ggplot() +
 
 ```{r}
 ggplot() + 
-  geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.2,color ="white",fill = 'gray90') + 
+  geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.2, color ="white", fill = 'gray90') + 
   geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke=0.6, color=as.factor(smart),size=as.factor(pop_size)), alpha = 0.4) + 
+  geom_path(data = states, aes(x = long, y = lat, group = group), color = "gray80", size = 0.1) +
   theme_void() +
   xlab('') + ylab('') +
   scale_size_ordinal(name=" Population", range=c(0.5,7), 
