@@ -40,5 +40,21 @@ target_str <- str_replace_all(target_str, fixed(" "), "") #remove white space
 ```{r}
 as.data.frame(table(unlist(strsplit(target_str, ",")))) %>% setNames(c("target", "count")) %>% mutate(pct=count/397*100) %>% arrange(count) 
 ```
+```{r}
+df <- df %>% mutate(SDG4_3 = case_when(str_detect(target,"SDG4_3")~1), SDG9_c = case_when(str_detect(target,"SDG9_c")~1), SDG10_4 = case_when(str_detect(target,"SDG10_4")~1), SDG11_2 = case_when(str_detect(target,"SDG11_2")~1), SDG1_1 = case_when(str_detect(target,"SDG1_1")~1), SDG3_8 = case_when(str_detect(target,"SDG3_8")~1), SDG8_5 = case_when(str_detect(target,"SDG8_5")~1))
+```
 
+```{r}
+df[is.na(df)] <- 0
+```
+```{r}
+df
+```
+```{r}
+df <- subset(df, select = -c(target, targets))
+```
+
+```{r}
+#write.csv(df, "data/selected_targets20240214.csv", row.names=FALSE)
+```
 
