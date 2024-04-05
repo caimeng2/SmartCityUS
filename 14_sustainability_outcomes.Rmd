@@ -22,87 +22,179 @@ smart[is.na(smart)] <- 0
 ```{r}
 head(smart)
 ```
-```{r}
-sdg1_1 <- acs %>% group_by(smart) %>% summarise(mean = mean(poverty, na.rm=T), 
-                                                n = n(),
-                                                lowerint = t.test(poverty)$conf.int[1], 
-                                                upperint = t.test(poverty)$conf.int[2])
-```
-```{r}
-sdg1_1
-```
+# plot function
 
-```{r}
-# # manual calculation just to double check
-# n <- length(smart$poverty)
-# xbar <- mean(smart$poverty, na.rm=T)
-# s <- sd(smart$poverty, na.rm = T)
-# margin <- qt(0.975,df=n-1)*s/sqrt(n) #margin of error, 95% confidence interval 
-# lowerinterval <- xbar - margin
-# upperinterval <- xbar + margin
-# print(lowerinterval)
-# print(upperinterval)
-```
 ```{r}
 mycolor <- c("#596174","#ea6a47" )
 ```
 
 ```{r}
-ggplot(sdg1_1,aes(x = as.factor(smart), y = mean, color = as.factor(smart))) + 
-  geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.02) + 
-  scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
-  geom_point() +
-  ylim(10,16) +
-  ylab("Poverty rate (%)") +
-  scale_color_manual(values = mycolor, name=" ", labels=c("1"="Smart cities", "0"="Non-smart cities")) +
-  theme_classic()
-```
-```{r}
-a <- ggplot(sdg1_1,aes(x = as.factor(smart), y = mean, color = as.factor(smart))) + 
-  geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.1) + 
-  scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
-  geom_point() +
-  ylim(9,18) +
-  ylab("Poverty rate (%)") +
-  scale_color_manual(values = mycolor, guide="none") +
-  theme_classic() +
-  theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
-a
-```
-
-```{r}
-sdg1_1s <- smart %>% group_by(SDG1_1) %>% summarise(mean = mean(poverty, na.rm=T), 
+plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
+  sumtable <- data1 %>% group_by(smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
                                                 n = n(),
-                                                lowerint = t.test(poverty)$conf.int[1], 
-                                                upperint = t.test(poverty)$conf.int[2])
-b <- ggplot(sdg1_1s,aes(x = as.factor(SDG1_1), y = mean)) + 
-  geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
-  scale_x_discrete(name =" ", labels = c("1"="With policy", "0"="Without policy")) +
-  geom_point(color = "#ea6a47") +
-  ylim(9,18) +
-  ylab("") +
-  theme_classic()+
-  theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
-b
-```
-```{r}
-sdg1_1p <- acs %>% group_by(pop_size, smart) %>% summarise(mean = mean(poverty, na.rm=T), 
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2],.groups = "drop")
+  print(sumtable)
+  
+  plota <- ggplot(sumtable,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin=lowerint, ymax=upperint), width=.1) + 
+    scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    geom_point() +
+    ylim(ymin,ymax) +
+    ylab(ylab) +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic() +
+    theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
+
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
+  
+  sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
                                                 n = n(),
-                                                lowerint = t.test(poverty)$conf.int[1], 
-                                                upperint = t.test(poverty)$conf.int[2])
-c <- ggplot(sdg1_1p, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
-  geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
-  scale_x_discrete(name ="Population", labels = c("1"="less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="1 million or more")) +
-  geom_point(position = position_dodge(width=.5)) +
-  ylab("") +
-  scale_color_manual(values = mycolor, guide="none") +
-  theme_classic()+
-  theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+  print(sumtablep)
+  
+  plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="Less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="Pop. 1 million +")) +
+    geom_point(position = position_dodge(width=.5)) +
+    ylim(ymin,ymax) +
+    ylab("") +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.1,0.1,0.1,0.1), 'lines'))
 
-c
+  ggarrange(plota, plotb, plotc, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
+}
+```
+# SDG 1.1
+```{r}
+p1_1 <- plot_ci(acs, poverty, 7, 20, smart, SDG1_1, "Poverty rate (%)")
 ```
 
+
+<!-- ```{r} -->
+<!-- sdg1_1 <- acs %>% group_by(smart) %>% summarise(mean = mean(poverty, na.rm=T), -->
+<!--                                                 n = n(), -->
+<!--                                                 lowerint = t.test(poverty)$conf.int[1], -->
+<!--                                                 upperint = t.test(poverty)$conf.int[2]) -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sdg1_1 -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- # # manual calculation just to double check -->
+<!-- # n <- length(smart$poverty) -->
+<!-- # xbar <- mean(smart$poverty, na.rm=T) -->
+<!-- # s <- sd(smart$poverty, na.rm = T) -->
+<!-- # margin <- qt(0.975,df=n-1)*s/sqrt(n) #margin of error, 95% confidence interval -->
+<!-- # lowerinterval <- xbar - margin -->
+<!-- # upperinterval <- xbar + margin -->
+<!-- # print(lowerinterval) -->
+<!-- # print(upperinterval) -->
+<!-- ``` -->
+
+
+<!-- ```{r} -->
+<!-- ggplot(sdg1_1,aes(x = as.factor(smart), y = mean, color = as.factor(smart))) + -->
+<!--   geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.02) + -->
+<!--   scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) + -->
+<!--   geom_point() + -->
+<!--   ylim(10,16) + -->
+<!--   ylab("Poverty rate (%)") + -->
+<!--   scale_color_manual(values = mycolor, name=" ", labels=c("1"="Smart cities", "0"="Non-smart cities")) + -->
+<!--   theme_classic() -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- a <- ggplot(sdg1_1,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + -->
+<!--   geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.1) + -->
+<!--   scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) + -->
+<!--   geom_point() + -->
+<!--   ylim(9,18) + -->
+<!--   ylab("Poverty rate (%)") + -->
+<!--   scale_color_manual(values = mycolor, guide="none") + -->
+<!--   theme_classic() + -->
+<!--   theme(plot.margin = unit(c(0,0.1,0,0), 'lines')) -->
+<!-- a -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- sdg1_1s <- smart %>% group_by(SDG1_1) %>% summarise(mean = mean(poverty, na.rm=T), -->
+<!--                                                 n = n(), -->
+<!--                                                 lowerint = t.test(poverty)$conf.int[1], -->
+<!--                                                 upperint = t.test(poverty)$conf.int[2]) -->
+<!-- b <- ggplot(sdg1_1s,aes(x = factor(SDG1_1, level=c("1", "0")), y = mean)) + -->
+<!--   geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + -->
+<!--   scale_x_discrete(name =" ", labels = c("1"="With policy", "0"="Without policy")) + -->
+<!--   geom_point(color = "#ea6a47") + -->
+<!--   ylim(9,18) + -->
+<!--   ylab("") + -->
+<!--   theme_classic()+ -->
+<!--   theme(plot.margin = unit(c(0,0.1,0,0), 'lines')) -->
+<!-- b -->
+<!-- ``` -->
+<!-- ```{r} -->
+<!-- sdg1_1p <- acs %>% group_by(pop_size, smart) %>% summarise(mean = mean(poverty, na.rm=T), -->
+<!--                                                 n = n(), -->
+<!--                                                 lowerint = t.test(poverty)$conf.int[1], -->
+<!--                                                 upperint = t.test(poverty)$conf.int[2]) -->
+<!-- c <- ggplot(sdg1_1p, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + -->
+<!--   geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + -->
+<!--   scale_x_discrete(name ="Population", labels = c("1"="less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="1 million or more")) + -->
+<!--   geom_point(position = position_dodge(width=.5)) + -->
+<!--   ylab("") + -->
+<!--   scale_color_manual(values = mycolor, guide="none") + -->
+<!--   theme_classic()+ -->
+<!--   theme(plot.margin = unit(c(0,0.1,0,0), 'lines')) -->
+<!-- c -->
+<!-- ``` -->
+
+<!-- ```{r} -->
+<!-- ggarrange(a, b, c, ncol = 3, nrow = 1, widths = c(1, 1, 2) ) -->
+<!-- ``` -->
+
+# SDG 3.8
 ```{r}
-ggarrange(a, b, c, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
+p3_8 <- plot_ci(acs, no_insurance, 5, 18, smart, SDG3_8, "No health insurance (%)")
+```
+# SDG 4.3
+```{r}
+p4_3 <- plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Bachelor’s degree + (%)")
+#plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Population 25 and over with a bachelor’s degree or higher (%)")
+```
+
+# SDG 8.5
+```{r}
+p8_5 <- plot_ci(acs, unemp, 3, 8, smart, SDG8_5, "Umemployed rate (%)")
+```
+
+# SDG 9.c
+```{r}
+p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "With internet subscription (%)")
+```
+
+# SDG 10.4
+```{r}
+p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini index")
+```
+# SDG 11.2
+```{r}
+p11_2 <- plot_ci(acs, green_commute, 13, 43, smart, SDG11_2, "Green commuting (%)")
+```
+```{r}
+ggarrange(p1_1, p3_8, p4_3, p8_5, p9_c, p10_4, p11_2, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/sdg_outcome.png")
 ```
 
