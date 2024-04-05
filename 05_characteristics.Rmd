@@ -338,3 +338,6 @@ plot_mean(df, smart, computer, "Percentage of households with computers")
 plot_facet(df, smart, computer, "Percentage of households with computers")
 ```
 
+```{r}
+write.csv(df, "data/acs20240404.csv", row.names=FALSE)
+```
