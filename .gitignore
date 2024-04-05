@@ -55,6 +55,7 @@ case_id.txt
 
 # nhgis data
 data/nhgis
+data/acs20240404.csv
 
 # text data
 data/seesus_text
