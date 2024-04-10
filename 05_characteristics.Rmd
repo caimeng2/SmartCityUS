@@ -287,7 +287,7 @@ plot_facet(df, smart, green_commute, "Percentage of commuters carpooling, using 
 ## Unemployed rate
 
 ```{r}
-plot_mean(df, smart, unemp, "Percentage of population umemployed")
+plot_mean(df, smart, unemp, "Percentage of population unemployed")
 ```
 
 ```{r}

@@ -44,7 +44,7 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
     ylab(ylab) +
     scale_color_manual(values = mycolor, guide="none") +
     theme_classic() +
-    theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
 
   sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
   n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
@@ -58,7 +58,7 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
     ylim(ymin,ymax) +
     ylab("") +
     theme_classic()+
-    theme(plot.margin = unit(c(0,0.1,0,0), 'lines'))
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
   
   sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
                                                 n = n(),
@@ -74,11 +74,65 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
     ylab("") +
     scale_color_manual(values = mycolor, guide="none") +
     theme_classic()+
-    theme(plot.margin = unit(c(0.1,0.1,0.1,0.1), 'lines'))
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
 
   ggarrange(plota, plotb, plotc, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
 }
 ```
+
+```{r}
+# with ledgend
+plot_ci_bottom <- function(data1, measure, ymin, ymax, data2, target, ylab) {
+  sumtable <- data1 %>% group_by(smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2],.groups = "drop")
+  print(sumtable)
+  
+  plota <- ggplot(sumtable,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin=lowerint, ymax=upperint), width=.1) + 
+    scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    geom_point() +
+    ylim(ymin,ymax) +
+    ylab(ylab) +
+    scale_color_manual(values = mycolor, name="", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    theme_classic() +
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'), legend.position="bottom")
+
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'))
+  
+  sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+  print(sumtablep)
+  
+  plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="Less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="Pop. 1 million +")) +
+    geom_point(position = position_dodge(width=.5)) +
+    ylim(ymin,ymax) +
+    ylab("") +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'))
+
+  ggarrange(plota, plotb, plotc, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
+}
+```
+
 # SDG 1.1
 ```{r}
 p1_1 <- plot_ci(acs, poverty, 7, 20, smart, SDG1_1, "Poverty rate (%)")
@@ -183,7 +237,7 @@ p8_5 <- plot_ci(acs, unemp, 3, 8, smart, SDG8_5, "Umemployed rate (%)")
 
 # SDG 9.c
 ```{r}
-p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "With internet subscription (%)")
+p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "Internet subscription (%)")
 ```
 
 # SDG 10.4
@@ -195,6 +249,26 @@ p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini index")
 p11_2 <- plot_ci(acs, green_commute, 13, 43, smart, SDG11_2, "Green commuting (%)")
 ```
 ```{r}
-ggarrange(p1_1, p3_8, p4_3, p8_5, p9_c, p10_4, p11_2, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/sdg_outcome.png")
+ggarrange(p9_c, p11_2, p10_4, p4_3, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/sdg_outcome.png")
+```
+
+```{r}
+sdg1_1 <- acs %>% group_by(smart) %>% summarise(mean = mean(poverty, na.rm=T),
+                                                n = n(),
+                                                lowerint = t.test(poverty)$conf.int[1],
+                                                upperint = t.test(poverty)$conf.int[2])
+```
+
+```{r}
+ggplot(sdg1_1,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) +
+  geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.1) +
+  scale_x_discrete(name ="", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+  geom_point() +
+  ylim(10,16) +
+  ylab("Poverty rate (%)") +
+  scale_color_manual(values = mycolor, name="", labels=c("1"="Smart cities", "0"="Non-smart cities")) +
+  theme_classic()+
+  theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'), legend.position="bottom")
+#ggsave(width=10, height=8, filename = "figure/poverty.png")
 ```
 
