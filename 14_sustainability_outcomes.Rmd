@@ -45,20 +45,6 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
     scale_color_manual(values = mycolor, guide="none") +
     theme_classic() +
     theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
-
-  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
-  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
-
-  print(sumtables)
-  
-  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
-    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
-    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
-    geom_point(color = "#ea6a47") +
-    ylim(ymin,ymax) +
-    ylab("") +
-    theme_classic()+
-    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
   
   sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
                                                 n = n(),
@@ -75,8 +61,22 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
     scale_color_manual(values = mycolor, guide="none") +
     theme_classic()+
     theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+  
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
 
-  ggarrange(plota, plotb, plotc, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+
+  ggarrange(plota, plotc, plotb, ncol = 3, nrow = 1, widths = c(1, 2, 1) )
 }
 ```
 
