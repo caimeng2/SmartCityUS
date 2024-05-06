@@ -89,3 +89,17 @@ ggplot() +
   theme(plot.margin = unit(c(1,2,1,1), "cm"))+
   guides(size = guide_legend(reverse=T, override.aes = list(shape=1)), color=guide_legend(reverse=T, override.aes = list(size = 5)))
 ```
+```{r}
+mycolor2 <- c("grey75","#ea6a47" )
+ggplot() + 
+  geom_polygon(data = states, aes(x=long, y = lat, group = group), linewidth=0.4 ,color ="grey",fill = 'white') + 
+  geom_point(data = map_df,  aes(x = INTPTLON, y = INTPTLAT, stroke =0,  color=as.factor(smart)), size=0.6, alpha = 0.7) + 
+  geom_path(data = states, aes(x = long, y = lat, group = group), color = "white", size = 0.3) +
+  geom_point(data = map_df %>% filter(smart==1),  aes(x = INTPTLON, y = INTPTLAT, stroke =0,  color=as.factor(smart)), size=1) +
+  theme_void() +
+  xlab('') + ylab('') +
+  scale_color_manual(name="", labels=c("1"="Smart cities", "0"="Non-smart cities"), values = mycolor2)+
+  theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(), legend.position = c(0.2, 0.15))+
+  guides(color=guide_legend(reverse=T, override.aes = list(size = 5)))
+#ggsave("figure/map.png")
+```

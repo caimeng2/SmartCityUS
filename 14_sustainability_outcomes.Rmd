@@ -25,7 +25,8 @@ head(smart)
 # plot function
 
 ```{r}
-mycolor <- c("#596174","#ea6a47" )
+#mycolor <- c("#596174","#ea6a47")
+mycolor <- c("grey50","#ea6a47")
 ```
 
 ```{r}
@@ -226,7 +227,7 @@ p3_8 <- plot_ci(acs, no_insurance, 5, 18, smart, SDG3_8, "No health insurance (%
 ```
 # SDG 4.3
 ```{r}
-p4_3 <- plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Bachelor’s degree + (%)")
+p4_3 <- plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Bachelor’s degree+ (%)")
 #plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Population 25 and over with a bachelor’s degree or higher (%)")
 ```
 
@@ -242,7 +243,7 @@ p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "Internet subscription (%)
 
 # SDG 10.4
 ```{r}
-p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini index")
+p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini coefficient")
 ```
 # SDG 11.2
 ```{r}

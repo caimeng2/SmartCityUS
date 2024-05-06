@@ -84,7 +84,16 @@ ggplot(bardf, aes(x = reorder(label, -pct), y = pct, fill = SDG)) +
   labs(y="Smart cities addressing SDGs (%)")
 #ggsave("figure/sdgs.png", height = 6, width = 8)
 ```
-
+```{r}
+ggplot(bardf, aes(x = reorder(label, pct), y = pct, fill = SDG)) +
+    geom_col(show.legend = F) +
+    scale_fill_manual(values = sdg_color(x = 1:17)) +
+    #scale_y_continuous(limits= c(0,100))+
+    theme_pubclean(flip=T) +
+  labs(y = "Smart cities addressing SDGs (%)", x="") +
+  coord_flip()
+#ggsave("figure/sdgs.png", height = 8, width = 6)
+```
 ```{r}
 df <- left_join(df[1:397,], city[c("GISJOIN","POP20")], by="GISJOIN")
 ```
@@ -95,3 +104,6 @@ df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=
 df %>% group_by(pop_size) %>% summarise(n=n(), soc_pct=sum(soc)/n, env_pct=sum(env)/n, eco_pct=sum(eco)/n)
 ```
 
+```{r}
+df %>% summarise(n=n(), soc_pct=sum(soc)/n, env_pct=sum(env)/n, eco_pct=sum(eco)/n)
+```
