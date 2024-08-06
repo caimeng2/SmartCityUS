@@ -1,5 +1,5 @@
 ---
-title: "sustainability outcomes"
+title: "sustainability performance"
 author: "cm"
 date: "2024-04-05"
 output: html_document
@@ -272,4 +272,30 @@ ggplot(sdg1_1,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.fac
   theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'), legend.position="bottom")
 #ggsave(width=10, height=8, filename = "figure/poverty.png")
 ```
+# t-test
 
+```{r}
+t.test(poverty~smart, var.equal = T, data = acs)
+```
+```{r}
+t.test(no_insurance~smart, data = acs)
+```
+
+```{r}
+t.test(bachelor~smart, data = acs)
+```
+
+```{r}
+t.test(unemp~smart, data = acs)
+```
+
+```{r}
+t.test(internet~smart, data = acs)
+```
+
+```{r}
+t.test(gini~smart, data = acs)
+```
+```{r}
+t.test(green_commute~smart, data = acs)
+```
