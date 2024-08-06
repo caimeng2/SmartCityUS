@@ -275,7 +275,7 @@ ggplot(sdg1_1,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.fac
 # t-test
 
 ```{r}
-t.test(poverty~smart, var.equal = T, data = acs)
+t.test(poverty~smart, data = acs)
 ```
 ```{r}
 t.test(no_insurance~smart, data = acs)
@@ -299,3 +299,88 @@ t.test(gini~smart, data = acs)
 ```{r}
 t.test(green_commute~smart, data = acs)
 ```
+
+# table function
+
+```{r}
+table_stats <- function(data, group_var, value_var) {
+  
+  # Calculate mean, sd, and 95% CI for each group
+  summary_stats <- data %>%
+    group_by(!!sym(group_var)) %>%
+    summarise(
+      mean = mean(!!sym(value_var), na.rm = TRUE),
+      sd = sd(!!sym(value_var), na.rm = TRUE),
+      n = n(),
+      se = sd / sqrt(n), # standard error
+      ci_lower = mean - qt(0.975, df = n - 1) * se, # lower bound of 95% CI
+      ci_upper = mean + qt(0.975, df = n - 1) * se  # upper bound of 95% CI
+    )
+  
+  # Round the results to two decimals
+  summary_stats <- summary_stats %>%
+    mutate(across(c(mean, sd, ci_lower, ci_upper), \(x) round(x, 2)))
+
+  print(summary_stats)
+  
+  # Construct the formula for the t-test
+  formula <- as.formula(paste(value_var, "~", group_var))
+  
+  # Perform Welch's t-test
+  t_test_result <- t.test(formula, data = data)
+  
+  # Calculate the difference in means and its 95% CI
+  mean_diff <- diff(summary_stats$mean)
+  ci_diff_lower <- mean_diff - qt(0.975, df = t_test_result$parameter) * t_test_result$stderr
+  ci_diff_upper <- mean_diff + qt(0.975, df = t_test_result$parameter) * t_test_result$stderr
+
+  # Round to two decimals
+  mean_diff <- round(mean_diff, 2)
+  ci_diff_lower <- round(ci_diff_lower, 2)
+  ci_diff_upper <- round(ci_diff_upper, 2)
+  t_statistic <- round(t_test_result$statistic, 2)
+  df <- round(t_test_result$parameter, 2) # Degrees of freedom
+  p_value <- formatC(t_test_result$p.value, format = "e", digits = 2)
+  
+  # Output the results for the difference in means
+  cat("\nDifference in means (Smart - Non-Smart):", mean_diff, "\n")
+  cat("95% CI for difference:", ci_diff_lower, "to", ci_diff_upper, "\n")
+  cat("t-test statistic:", t_statistic, "\n")
+  cat("Degrees of freedom:", df, "\n")
+  cat("p-value:", p_value, "\n")
+}
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "internet")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "green_commute")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "bachelor")
+```
+```{r}
+table_stats(acs, group_var = "smart", value_var = "gini")
+```
+```{r}
+table_stats(acs, group_var = "smart", value_var = "poverty")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "no_insurance")
+```
+```{r}
+3.35e-03
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "unemp")
+```
+
+```{r}
+7.04e-01 
+```
+
