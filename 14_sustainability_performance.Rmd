@@ -55,7 +55,7 @@ plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
   
   plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
     geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
-    scale_x_discrete(name ="", labels = c("1"="Less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="Pop. 1 million +")) +
+    scale_x_discrete(name ="", labels = c("1"="Less than 10k", "2"="10k to 99,999", "3"="100k to 999,999", "4"="Pop. 1 million +")) +
     geom_point(position = position_dodge(width=.5)) +
     ylim(ymin,ymax) +
     ylab("") +
@@ -250,7 +250,7 @@ p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini coefficient")
 p11_2 <- plot_ci(acs, green_commute, 13, 43, smart, SDG11_2, "Green commuting (%)")
 ```
 ```{r}
-ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/sdg_outcome.png")
+ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/sdg_performance.png")
 ```
 
 ```{r}
