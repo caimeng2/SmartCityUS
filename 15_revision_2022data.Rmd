@@ -1,0 +1,57 @@
+---
+title: "update ACS data"
+author: "cm"
+date: "2024-09-17"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+options(scipen=16)
+```
+```{r}
+df <- read_csv("data/smart_cities20240110.csv")
+ds262 <- read_csv("data/nhgis/nhgis0025_csv/nhgis0025_ds262_20225_place.csv")
+ds263 <- read_csv("data/nhgis/nhgis0025_csv/nhgis0025_ds263_20225_place.csv")
+```
+# cleaning
+
+```{r}
+ds262 <- ds262 %>% 
+# Percentage of commuters 16 and over carpooling, using public transport, bicycles, or walking to work
+# Data: Table 1:     Means of Transportation to Work
+  mutate(green_commute = (AQN5E004+AQN5E010+AQN5E018+AQN5E019)/(AQN5E001-AQN5E021)*100, 
+# Percentage of the population 25 and over with a bachelor’s degree or higher
+# Data: Table 2:     Educational Attainment for the Population 25 Years and Over
+        bachelor = (AQPKE022+AQPKE023+AQPKE024+AQPKE025)/AQPKE001*100, 
+# Percentage of households living below poverty line
+# Data: Table 3:     Poverty Status in the Past 12 Months by Household Type by Age of Householder
+        poverty = AQP2E002/AQP2E001*100,
+# Per capita income
+# Data: Table 4:     Per Capita Income in the Past 12 Months (in 2022 Inflation-Adjusted Dollars)
+        income = AQRAE001,
+# Percentage of the population without health insurance
+# Data: Table 6:     Types of Health Insurance Coverage by Age
+        no_insurance = (AQVXE017+AQVXE033+AQVXE050+AQVXE066)/AQVXE001*100, 
+# Percentage of households with internet subscription
+# Data: Table 7:    Presence and Types of Internet Subscriptions in Household
+        internet = AQVZE002/AQVZE001*100,
+# Unemployed rate: (Unemployed/Labor Force) x 100
+# Data: Table 5:     Employment Status for the Population 16 Years and Over
+        unemp = AQR8E005/AQR8E002*100) %>% 
+  select(GISJOIN, green_commute, bachelor, poverty, income, no_insurance, internet, unemp)
+```
+```{r}
+ds263 <- ds263 %>% 
+# Gini index of income inequality (It measures the degree of income inequality on a 0-1 scale. The more equal the income distribution, the lower the Gini index
+# Data: Table 1:     Gini Index of Income Inequality
+  mutate(gini = AQ8TE001) %>% select(GISJOIN, gini)
+```
+
+```{r}
+df <- merge(df, ds262, by = "GISJOIN", all.x = TRUE)
+df <- merge(df, ds263, by = "GISJOIN", all.x = TRUE)
+```
+```{r}
+write.csv(df, "data/acs20240917.csv", row.names=FALSE)
+```
