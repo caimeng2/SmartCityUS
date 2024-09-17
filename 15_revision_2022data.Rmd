@@ -14,6 +14,11 @@ df <- read_csv("data/smart_cities20240110.csv")
 ds262 <- read_csv("data/nhgis/nhgis0025_csv/nhgis0025_ds262_20225_place.csv")
 ds263 <- read_csv("data/nhgis/nhgis0025_csv/nhgis0025_ds263_20225_place.csv")
 ```
+```{r}
+df <- df %>% mutate(pop_size=case_when(POP20>=1000000 ~ 4, POP20<1000000&POP20>=100000 ~3, POP20<100000&POP20>= 10000 ~2, POP20<10000 ~1)) %>% mutate(pop_label=case_when(POP20>=1000000 ~ "Population: 1 million or more", POP20<1000000&POP20>=100000 ~ "Population: 100,000 to 999,999", POP20<100000&POP20>= 10000 ~"Population: 10,000 to 99,999", POP20<10000 ~"Population: less than 10,000")) 
+df$pop_label <- factor(df$pop_label, levels = c("Population: 1 million or more", "Population: 100,000 to 999,999", "Population: 10,000 to 99,999", "Population: less than 10,000"))
+```
+
 # cleaning
 
 ```{r}
