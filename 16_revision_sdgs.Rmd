@@ -1,0 +1,312 @@
+---
+title: "update SDGs"
+author: "cm"
+date: "2024-09-17"
+output: html_document
+---
+
+---
+title: "sustainability performance"
+author: "cm"
+date: "2024-04-05"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggpubr)
+```
+```{r}
+acs <- read.csv("data/acs20240917.csv")
+target <- read.csv("data/selected_targets20240214.csv")
+smart <- acs %>% filter(smart==1) # only smart cities
+```
+
+```{r}
+smart <- merge(smart, target, by = "GISJOIN", all.x = TRUE)
+smart[is.na(smart)] <- 0
+```
+```{r}
+head(smart)
+```
+# plot function
+
+```{r}
+#mycolor <- c("#596174","#ea6a47")
+mycolor <- c("grey50","#ea6a47")
+```
+
+```{r}
+plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
+  sumtable <- data1 %>% group_by(smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2],.groups = "drop")
+  print(sumtable)
+  
+  plota <- ggplot(sumtable,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin=lowerint, ymax=upperint), width=.1) + 
+    scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    geom_point() +
+    ylim(ymin,ymax) +
+    ylab(ylab) +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic() +
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+  
+  sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+  print(sumtablep)
+  
+  plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="Less than 10k", "2"="10k to 99,999", "3"="100k to 999,999", "4"="Pop. 1 million +")) +
+    geom_point(position = position_dodge(width=.5)) +
+    ylim(ymin,ymax) +
+    ylab("") +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+  
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+
+  ggarrange(plota, plotc, plotb, ncol = 3, nrow = 1, widths = c(1, 2, 1) )
+}
+```
+
+```{r}
+# with ledgend
+plot_ci_bottom <- function(data1, measure, ymin, ymax, data2, target, ylab) {
+  sumtable <- data1 %>% group_by(smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2],.groups = "drop")
+  print(sumtable)
+  
+  plota <- ggplot(sumtable,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin=lowerint, ymax=upperint), width=.1) + 
+    scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    geom_point() +
+    ylim(ymin,ymax) +
+    ylab(ylab) +
+    scale_color_manual(values = mycolor, name="", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    theme_classic() +
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'), legend.position="bottom")
+
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'))
+  
+  sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+  print(sumtablep)
+  
+  plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="Less than 10,000", "2"="10,000 to 99,999", "3"="100,000 to 999,999", "4"="Pop. 1 million +")) +
+    geom_point(position = position_dodge(width=.5)) +
+    ylim(ymin,ymax) +
+    ylab("") +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'))
+
+  ggarrange(plota, plotb, plotc, ncol = 3, nrow = 1, widths = c(1, 1, 2) )
+}
+```
+
+# SDG 1.1
+```{r}
+p1_1 <- plot_ci(acs, poverty, 7, 20, smart, SDG1_1, "Poverty rate (%)")
+```
+
+
+# SDG 3.8
+```{r}
+p3_8 <- plot_ci(acs, no_insurance, 5, 18, smart, SDG3_8, "No health insurance (%)")
+```
+# SDG 4.3
+```{r}
+p4_3 <- plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Bachelor’s degree+ (%)")
+#plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Population 25 and over with a bachelor’s degree or higher (%)")
+```
+
+# SDG 8.5
+```{r}
+p8_5 <- plot_ci(acs, unemp, 3, 8, smart, SDG8_5, "Unemployed rate (%)")
+```
+
+# SDG 9.c
+```{r}
+p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "Internet subscription (%)")
+```
+
+# SDG 10.4
+```{r}
+p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini coefficient")
+```
+# SDG 11.2
+```{r}
+p11_2 <- plot_ci(acs, green_commute, 13, 43, smart, SDG11_2, "Green commuting (%)")
+```
+```{r}
+ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/acs.png")
+```
+
+```{r}
+sdg1_1 <- acs %>% group_by(smart) %>% summarise(mean = mean(poverty, na.rm=T),
+                                                n = n(),
+                                                lowerint = t.test(poverty)$conf.int[1],
+                                                upperint = t.test(poverty)$conf.int[2])
+```
+
+```{r}
+ggplot(sdg1_1,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) +
+  geom_errorbar(aes(ymin = lowerint, ymax = upperint), width=.1) +
+  scale_x_discrete(name ="", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+  geom_point() +
+  ylim(10,16) +
+  ylab("Poverty rate (%)") +
+  scale_color_manual(values = mycolor, name="", labels=c("1"="Smart cities", "0"="Non-smart cities")) +
+  theme_classic()+
+  theme(plot.margin = unit(c(0.8,0,0,0.5), 'cm'), legend.position="bottom")
+#ggsave(width=10, height=8, filename = "figure/poverty.png")
+```
+# t-test
+
+```{r}
+t.test(poverty~smart, data = acs)
+```
+```{r}
+t.test(no_insurance~smart, data = acs)
+```
+
+```{r}
+t.test(bachelor~smart, data = acs)
+```
+
+```{r}
+t.test(unemp~smart, data = acs)
+```
+
+```{r}
+t.test(internet~smart, data = acs)
+```
+
+```{r}
+t.test(gini~smart, data = acs)
+```
+```{r}
+t.test(green_commute~smart, data = acs)
+```
+
+# table function
+
+```{r}
+table_stats <- function(data, group_var, value_var) {
+  
+  # Calculate mean, sd, and 95% CI for each group
+  summary_stats <- data %>%
+    group_by(!!sym(group_var)) %>%
+    summarise(
+      mean = mean(!!sym(value_var), na.rm = TRUE),
+      sd = sd(!!sym(value_var), na.rm = TRUE),
+      n = n(),
+      se = sd / sqrt(n), # standard error
+      ci_lower = mean - qt(0.975, df = n - 1) * se, # lower bound of 95% CI
+      ci_upper = mean + qt(0.975, df = n - 1) * se  # upper bound of 95% CI
+    )
+  
+  # Round the results to two decimals
+  summary_stats <- summary_stats %>%
+    mutate(across(c(mean, sd, ci_lower, ci_upper), \(x) round(x, 2)))
+
+  print(summary_stats)
+  
+  # Construct the formula for the t-test
+  formula <- as.formula(paste(value_var, "~", group_var))
+  
+  # Perform Welch's t-test
+  t_test_result <- t.test(formula, data = data)
+  
+  # Calculate the difference in means and its 95% CI
+  mean_diff <- diff(summary_stats$mean)
+  ci_diff_lower <- mean_diff - qt(0.975, df = t_test_result$parameter) * t_test_result$stderr
+  ci_diff_upper <- mean_diff + qt(0.975, df = t_test_result$parameter) * t_test_result$stderr
+
+  # Round to two decimals
+  mean_diff <- round(mean_diff, 2)
+  ci_diff_lower <- round(ci_diff_lower, 2)
+  ci_diff_upper <- round(ci_diff_upper, 2)
+  t_statistic <- round(t_test_result$statistic, 2)
+  df <- round(t_test_result$parameter, 2) # Degrees of freedom
+  p_value <- formatC(t_test_result$p.value, format = "e", digits = 2)
+  
+  # Output the results for the difference in means
+  cat("\nDifference in means (Smart - Non-Smart):", mean_diff, "\n")
+  cat("95% CI for difference:", ci_diff_lower, "to", ci_diff_upper, "\n")
+  cat("t-test statistic:", t_statistic, "\n")
+  cat("Degrees of freedom:", df, "\n")
+  cat("p-value:", p_value, "\n")
+}
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "internet")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "green_commute")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "bachelor")
+```
+```{r}
+table_stats(acs, group_var = "smart", value_var = "gini")
+```
+```{r}
+table_stats(acs, group_var = "smart", value_var = "poverty")
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "no_insurance")
+```
+```{r}
+7.96e-03 
+```
+
+```{r}
+table_stats(acs, group_var = "smart", value_var = "unemp")
+```
+
+```{r}
+1.16e-01 
+```
+
