@@ -1,14 +1,7 @@
 ---
 title: "update SDGs"
 author: "cm"
-date: "2024-09-17"
-output: html_document
----
-
----
-title: "sustainability performance"
-author: "cm"
-date: "2024-04-05"
+date: "2024-09-26"
 output: html_document
 ---
 
@@ -153,7 +146,7 @@ p3_8 <- plot_ci(acs, no_insurance, 5, 18, smart, SDG3_8, "No health insurance (%
 ```
 # SDG 4.3
 ```{r}
-p4_3 <- plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Bachelor’s degree+ (%)")
+p4_3 <- plot_ci(acs, bachelor, 18, 51, smart, SDG4_3, "Bachelor’s degree+ (%)")
 #plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Population 25 and over with a bachelor’s degree or higher (%)")
 ```
 
@@ -164,7 +157,7 @@ p8_5 <- plot_ci(acs, unemp, 3, 8, smart, SDG8_5, "Unemployed rate (%)")
 
 # SDG 9.c
 ```{r}
-p9_c <- plot_ci(acs, internet, 79, 91, smart, SDG9_c, "Internet subscription (%)")
+p9_c <- plot_ci(acs, internet, 79, 92, smart, SDG9_c, "Internet subscription (%)")
 ```
 
 # SDG 10.4
@@ -280,6 +273,10 @@ table_stats <- function(data, group_var, value_var) {
 ```{r}
 table_stats(acs, group_var = "smart", value_var = "internet")
 ```
+```{r}
+3.88e-95 
+```
+
 
 ```{r}
 table_stats(acs, group_var = "smart", value_var = "green_commute")
@@ -309,4 +306,6 @@ table_stats(acs, group_var = "smart", value_var = "unemp")
 ```{r}
 1.16e-01 
 ```
-
+```{r}
+table_stats(acs, group_var = "smart", value_var = "income")
+```
