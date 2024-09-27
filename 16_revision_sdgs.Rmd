@@ -147,7 +147,6 @@ p3_8 <- plot_ci(acs, no_insurance, 5, 18, smart, SDG3_8, "No health insurance (%
 # SDG 4.3
 ```{r}
 p4_3 <- plot_ci(acs, bachelor, 18, 51, smart, SDG4_3, "Bachelor’s degree+ (%)")
-#plot_ci(acs, bachelor, 18, 50, smart, SDG4_3, "Population 25 and over with a bachelor’s degree or higher (%)")
 ```
 
 # SDG 8.5
@@ -159,6 +158,23 @@ p8_5 <- plot_ci(acs, unemp, 3, 8, smart, SDG8_5, "Unemployed rate (%)")
 ```{r}
 p9_c <- plot_ci(acs, internet, 79, 92, smart, SDG9_c, "Internet subscription (%)")
 ```
+# income
+```{r}
+#plot_ci(acs, income, 0.4, 0.55, smart, income, "income")
+```
+```{r}
+45187.76 - 33902.66	
+```
+```{r}
+41415.17 - 37876.10	
+```
+```{r}
+46897.66-39917.71
+```
+```{r}
+51291.24 - 32898.05	
+```
+
 
 # SDG 10.4
 ```{r}
