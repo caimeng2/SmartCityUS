@@ -1,4 +1,4 @@
-# Code for "Smart Cities in the United States"
+# Code for "Linking smart cities and SDGs through descriptive analysis of U.S. municipalities"
 
 ## System requirements
 
