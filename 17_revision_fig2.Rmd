@@ -1,0 +1,121 @@
+---
+title: "17_revision_fig2"
+author: "cm"
+date: "2024-12-05"
+output: html_document
+---
+
+```{r}
+library(tidyverse)
+library(ggpubr)
+```
+```{r}
+acs <- read.csv("data/acs20240917.csv")
+target <- read.csv("data/selected_targets20240214.csv")
+smart <- acs %>% filter(smart==1) # only smart cities
+```
+
+```{r}
+smart <- merge(smart, target, by = "GISJOIN", all.x = TRUE)
+smart[is.na(smart)] <- 0
+```
+```{r}
+head(smart)
+```
+# plot function
+
+```{r}
+#mycolor <- c("#596174","#ea6a47")
+mycolor <- c("grey50","#ea6a47")
+```
+
+```{r}
+plot_ci <- function(data1, measure, ymin, ymax, data2, target, ylab) {
+  sumtable <- data1 %>% group_by(smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2],.groups = "drop")
+  print(sumtable)
+  
+  plota <- ggplot(sumtable,aes(x = factor(smart, level=c("0", "1")), y = mean, color = as.factor(smart))) + 
+    geom_errorbar(aes(ymin=lowerint, ymax=upperint), width=.1) + 
+    scale_x_discrete(name =" ", labels = c("1"="Smart cities", "0"="Non-smart cities")) +
+    geom_point() +
+    ylim(ymin,ymax) +
+    ylab(ylab) +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic() +
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+  
+  sumtablep <- data1 %>% group_by(pop_size, smart) %>% summarise(mean = mean({{measure}}, na.rm=T), 
+                                                n = n(),
+                                                lowerint = t.test({{measure}})$conf.int[1], 
+                                                upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+  print(sumtablep)
+  
+  # Filter data for "Pop. 1 million +" only
+  data1_filtered <- data1 %>% filter(pop_size == "4")
+  
+  plotc <- ggplot(sumtablep, aes(x = factor(pop_size, level=c("4", "3", "2", "1")), y = mean, color = as.factor(smart))) + 
+    geom_jitter(data=data1_filtered, mapping=aes(x=factor(pop_size), y = {{measure}}), color = "lightgray", shape = 4, position =position_jitter(width = 0.05), show.legend = FALSE)+
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), position = position_dodge(width=.5), width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="Less than 10k", "2"="10k to 99,999", "3"="100k to 999,999", "4"="Pop. 1 million +")) +
+    geom_point(position = position_dodge(width=.5)) +
+    ylim(ymin,ymax) +
+    ylab("") +
+    scale_color_manual(values = mycolor, guide="none") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+  
+  sumtables <- data2 %>% group_by({{target}}) %>% summarise(mean = mean({{measure}}, na.rm=T),
+  n = n(), lowerint = t.test({{measure}})$conf.int[1], upperint = t.test({{measure}})$conf.int[2], .groups = "drop")
+
+  print(sumtables)
+  
+  plotb <- ggplot(sumtables,aes(x = factor({{target}}, level=c("1", "0")), y = mean)) + 
+    geom_errorbar(aes(ymin = lowerint, ymax = upperint), color = "#ea6a47", width=.1) + 
+    scale_x_discrete(name ="", labels = c("1"="With policy", "0"="Without policy")) +
+    geom_point(color = "#ea6a47") +
+    ylim(ymin,ymax) +
+    ylab("") +
+    theme_classic()+
+    theme(plot.margin = unit(c(0.8,0,0,0), 'cm'))
+
+  ggarrange(plota, plotc, plotb, ncol = 3, nrow = 1, widths = c(1, 2, 1) )
+}
+```
+
+# SDG 1.1
+```{r}
+p1_1 <- plot_ci(acs, poverty, 7, 22, smart, SDG1_1, "Poverty rate (%)")
+```
+
+# SDG 3.8
+```{r}
+p3_8 <- plot_ci(acs, no_insurance, 4, 25, smart, SDG3_8, "No health insurance (%)")
+```
+# SDG 4.3
+```{r}
+p4_3 <- plot_ci(acs, bachelor, 18, 51, smart, SDG4_3, "Bachelor’s degree+ (%)")
+```
+
+# SDG 8.5
+```{r}
+p8_5 <- plot_ci(acs, unemp, 3, 9, smart, SDG8_5, "Unemployed rate (%)")
+```
+
+# SDG 9.c
+```{r}
+p9_c <- plot_ci(acs, internet, 79, 95, smart, SDG9_c, "Internet subscription (%)")
+```
+# SDG 10.4
+```{r}
+p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini coefficient")
+```
+# SDG 11.2
+```{r}
+p11_2 <- plot_ci(acs, green_commute, 14, 72, smart, SDG11_2, "Green commuting (%)")
+```
+```{r}
+#ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/acs_points.pdf")
+```
