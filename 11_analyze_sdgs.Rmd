@@ -93,7 +93,7 @@ ggplot(bardf, aes(x = reorder(label, pct), y = pct, fill = SDG)) +
     theme_pubclean(flip=T) +
   labs(y = "Smart cities addressing SDGs (%)", x="") +
   coord_flip()
-#ggsave("figure/sdgs.pdf", height = 8, width = 6)
+ggsave("figure/sdgs.pdf", height = 8, width = 6, dpi=500)
 ```
 ```{r}
 df <- left_join(df[1:397,], city[c("GISJOIN","POP20")], by="GISJOIN")

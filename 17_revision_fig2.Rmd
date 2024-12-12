@@ -117,5 +117,5 @@ p10_4 <- plot_ci(acs, gini, 0.4, 0.55, smart, SDG10_4, "Gini coefficient")
 p11_2 <- plot_ci(acs, green_commute, 14, 72, smart, SDG11_2, "Green commuting (%)")
 ```
 ```{r}
-#ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/acs_points.pdf")
+#ggarrange(p9_c, p11_2, p4_3, p10_4, p1_1, p3_8, p8_5, ncol = 1, nrow = 7, labels = "auto", label.x = 0.97) %>% ggsave(width=10, height=13, filename = "figure/acs_points.pdf", dpi=500)
 ```
