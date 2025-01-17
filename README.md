@@ -1,4 +1,6 @@
-# Code for "Linking smart cities and SDGs through descriptive analysis of U.S. municipalities"
+# Code for "[Linking smart cities and SDGs through descriptive analysis of US municipalities](https://www.nature.com/articles/s44284-024-00192-9)"
+
+Cai, M., Decaminada, T., Li, Y., Durst, N. J., Kassens-Noor, E., & Wilson, M. (2025). Linking smart cities and SDGs through descriptive analysis of US municipalities. Nature Cities, 1–5. https://doi.org/10.1038/s44284-024-00192-9
 
 ## System requirements
 
